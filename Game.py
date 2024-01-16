@@ -1,20 +1,21 @@
 
-print(3)
+
+from Engine_g import Player
 import pygame
 
 
-settings_width, settings_height, start_pose_x, start_pose_y = 900, 800, 30, 50
 
 
 pygame.init()
+settings_width, settings_height = 900, 800
+player = Player(80, (30, 50))
 
 size = width, height = settings_width, settings_height
 screen = pygame.display.set_mode(size)
 
 running = True
 x_pose, y_pose = start_pose_x, start_pose_y
-V = 120
-fps = 60
+fps = player.fps
 is_pressed_shift = None
 clock = pygame.time.Clock()
 
