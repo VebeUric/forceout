@@ -11,3 +11,10 @@ class GameStateManager:
 
     def check_current_game_state(self):
         return self.current_state
+
+class Settings:
+    def __init__(self):
+        self.screen_size = (1080, 1920)
+
+    def change_screen_size(self,  new_width, new_hieght):
+        self.screen_size  = (new_width, new_hieght)

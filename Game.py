@@ -5,7 +5,7 @@ import pygame
 pygame.init()
 
 settings_width, settings_height = 900, 800
-player = Player(80, (30, 50))
+player = Player(80, (30, 50), 'data/Sprites/main_character_sprite/hesh')
 
 size = width, height = settings_width, settings_height
 screen = pygame.display.set_mode(size)
@@ -40,7 +40,7 @@ while running:
     else:
         player.speed_down()
     screen.fill((0, 0, 0))
-    pygame.draw.rect(screen, (0, 255, 0), (player.x_pose, player.y_pose, 30, 50))
+    player.player_anim.update()
 
     clock.tick(fps)
     pygame.display.flip()
