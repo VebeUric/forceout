@@ -18,10 +18,29 @@ class Player(pygame.sprite.Sprite):
         self.y_pose = y_pose
         self.fps = fps
         self.v = 120
+        self.frames = None
+        self.sprite_width = 50  # Ширина каждого кадра
+        self.sprite_height = 79  # Высота каждого кадра
+        self.animation_speed = 10  # Скорость смены кадров
+        self.animation_index = 0
         if not (os.path.exists(character_folder_path) and os.path.isdir(character_folder_path)):
             split_image('data/Sprites/main_character_sprite/Fire_player_sprite.png', character_folder_path, 25, 1)
-        self.player_anim = AnimatedSprite(load_image('Sprites/main_character_sprite/hesh/frame_0_0.png'), 8, 1, 115, 80)
+        player_sprite_sheet = load_image("Sprites/main_character_sprite/hesh/frame_0_0.png")
+        self.frames = prepear_frames(self.sprite_width, self.sprite_height, player_sprite_sheet)
 
+
+    def draw(self, screen):
+        self.player_rect = self.image.get_rect()
+        self.player_rect.x = 100
+        self.player_rect.y = 100
+        screen.blit(self.image, self.player_rect.topleft)
+
+    def update(self, screen):
+        if self.frames:
+            self.animation_index += 1
+            if self.animation_index >= len(self.frames):
+                self.animation_index = 0
+            self.image = self.frames[int(self.animation_index)]
 
     def is_alive(self):
         if self.health > 0:
@@ -76,27 +95,12 @@ class EnemyFurtherType:
     pass
 
 
-class AnimatedSprite(pygame.sprite.Sprite):
-    def __init__(self, sheet, columns, rows, x, y):
-        super().__init__()
-        self.frames = []
-        self.cut_sheet(sheet, columns, rows)
-        self.cur_frame = 0
-        self.image = self.frames[self.cur_frame]
-
-    def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
-                                sheet.get_height() // rows)
-        for j in range(rows):
-            for i in range(columns):
-                frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(
-                    frame_location, self.rect.size)))
-
-    def update(self):
-        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-        print('otr')
-        self.image = self.frames[self.cur_frame]
+def prepear_frames(sprite_width, sprite_height,  player_sprite_sheet):
+    frames = []
+    for i in range(player_sprite_sheet.get_width() // sprite_width):
+        frame_rect = pygame.Rect(i * sprite_width, 0, sprite_width, sprite_height)
+        frames.append(player_sprite_sheet.subsurface(frame_rect))
+    return frames
 
 
 

@@ -7,6 +7,11 @@ pygame.init()
 settings_width, settings_height = 900, 800
 player = Player(80, (30, 50), 'data/Sprites/main_character_sprite/hesh')
 
+def update():
+    player.update(screen)
+    player.draw(screen)
+
+
 size = width, height = settings_width, settings_height
 screen = pygame.display.set_mode(size)
 
@@ -40,10 +45,11 @@ while running:
     else:
         player.speed_down()
     screen.fill((0, 0, 0))
-    player.player_anim.update()
-
-    clock.tick(fps)
+    update()
     pygame.display.flip()
+    clock.tick(60)
 pygame.quit()
+
+
 
 
