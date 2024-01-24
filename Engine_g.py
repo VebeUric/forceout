@@ -23,6 +23,16 @@ close_type_animation = {
 
 }
 
+health_bar =  {
+    'full': 'health_indicators/full.png',
+    'step_one': 'health_indicators/step_one.png',
+    'step_two': 'health_indicators/step_two.png',
+    'step_three': 'health_indicators/step_three.png',
+    'step_four': 'health_indicators/step_four.png',
+     'null': 'health_indicators/null.png'
+
+}
+
 
 anim= Animation()
 class Player(pygame.sprite.Sprite):
@@ -30,26 +40,53 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.armore = armore
         self.health = health
+        self.start_health = health
         self.is_pressed_shift = None
         self.mass = mass
         self.size = size
         self.x_pose = x_pose
         self.y_pose = y_pose
         self.fps = fps
-        self.v = 520
+        self.v = 620
         self.move_again = None
         self.frames = None
-        self.scroll_box = pygame.Rect(83, 65, 100, 100)
+        self.scroll_box = pygame.Rect(83, 65, 500, 500)
         self.sprite_width = 27 # Ширина каждого кадра
         self.sprite_height = 70 # Высота каждого кадра
         self.animation_speed = 10  # Скорость смены кадров
         self.animation_index = 0
-
+        self.controller_hp()
         self.player_rect = anim.load_image('Sprites/main_character_sprite/hesh/frame_0_0.png').get_rect()
         self.respawn(100, 100)
         if not (os.path.exists(character_folder_path) and os.path.isdir(character_folder_path)):
             anim.split_image('data/Sprites/main_character_sprite/Fire_player_sprite.png', character_folder_path, 25, 1)
         self.idle()
+
+    def get_damage(self, damage):
+        self.health -= damage
+
+    def controller_hp(self):
+        zoom_level =  0.4
+        if self.health  >= self.start_health * 0.8 and self.health  <= self.start_health:
+            health_sprite = health_bar['full']
+        elif self.health  >= self.start_health * 0.6 and self.health  <= self.start_health * 0.8:
+            health_sprite = health_bar['step_one']
+        elif self.health  >= self.start_health * 0.4 and self.health  <= self.start_health * 0.6:
+            health_sprite = health_bar['step_two']
+        elif self.health  >= self.start_health * 0.2 and self.health  <= self.start_health * 0.4:
+            health_sprite = health_bar['step_three']
+        elif self.health  >= self.start_health * 0.1 and self.health  <= self.start_health * 0.2:
+            health_sprite = health_bar['step_four']
+        else:
+            health_sprite = health_bar['null']
+
+        self.health_rect = anim.load_alpha_image(health_sprite)
+        self.health_rect = pygame.transform.scale(self.health_rect, (int(self.health_rect.get_width() * zoom_level), int(self.health_rect.get_height() * zoom_level)))
+        self.healt_image = pygame.Rect(1000, 500, 193.6, 48.4)
+
+
+    def death(self):
+        pass
 
     def idle(self):
         self.clear_frames()
@@ -59,6 +96,9 @@ class Player(pygame.sprite.Sprite):
 
 
     def draw(self, screen):
+        zoom_level = 2
+        screen.blit(self.health_rect, self.healt_image.topleft)
+        self.image = pygame.transform.scale(self.image, (int(self.image.get_width() * zoom_level), int(self.image.get_height() * zoom_level)))
         screen.blit(self.image, self.player_rect.topleft)
 
     def update(self, screen):
@@ -76,8 +116,20 @@ class Player(pygame.sprite.Sprite):
 
 
 
-    def scroll_screen(self):
-
+    def scroll_screen(self, screen, sur):
+        if self.scroll_box.left < screen.get_rect().left:
+            sur.move_left()
+            print('move_left')
+            self.player_rect.x += self.v / self.fps
+        elif self.scroll_box.right > screen.get_rect().right:
+            sur.move_right()
+            self.player_rect.x -= self.v / self.fps
+        if self.scroll_box.top < screen.get_rect().top:
+            sur.move_up()
+            self.player_rect.y += self.v / self.fps
+        elif self.scroll_box.bottom > screen.get_rect().bottom:
+            sur.move_down()
+            self.player_rect.y -= self.v / self.fps
 
     def clear_frames(self):
         self.move_again = None
@@ -131,11 +183,11 @@ class Player(pygame.sprite.Sprite):
         self.is_pressed_shift = False
 
     def speed_up(self):
-        if self.v != 600:
+        if self.v != 700:
             self.v += 10
 
     def speed_down(self):
-        if self.v != 560:
+        if self.v != 620:
             self.v -= 10
 
 class EnemyCloseType:
@@ -151,13 +203,20 @@ class EnemyCloseType:
         self.fps = fps
         self.move_again = None
         self.v = 90
+
+
+        self.radius = 20
+        self.image = pygame.Surface((2 * self.radius, 2 * self.radius), pygame.SRCALPHA)
+        pygame.draw.circle(self.image,(255, 255, 255), (self.radius, self.radius), self.radius)
+        self.rect = self.image.get_rect()
+
         self.frames = None
         self.sprite_width = 27 # Ширина каждого кадра
         self.sprite_height = 70 # Высота каждого кадра
         self.animation_speed = 10  # Скорость смены кадров
         self.animation_index = 0
         self.player_rect = anim.load_image('Sprites/CloseTypeEnemy/NightBorne.png').get_rect()
-        self.respawn(50, 50)
+        self.respawn(400, 400)
         if not (os.path.exists(character_folder_path) and os.path.isdir(character_folder_path)):
             anim.split_image('data/Sprites/CloseTypeEnemy/NightBorne.png', character_folder_path, 5, 1)
         self.idle()
@@ -183,16 +242,20 @@ class EnemyCloseType:
 
 
     def draw(self, screen):
+        zoom_level = 3.5
+        self.image = pygame.transform.scale(self.image, (
+        int(self.image.get_width() * zoom_level), int(self.image.get_height() * zoom_level)))
         screen.blit(self.image, self.player_rect.topleft)
 
     def update(self, screen, player_rect_x, player_rect_y):
+        self.rect.center = self.player_rect.center
         self.strive_to_player(player_rect_x, player_rect_y)
         if self.frames:
             self.animation_index += 1
             if self.animation_index >= len(self.frames):
                 self.animation_index = 0
             if not self.move_again:
-                self.image = self.transverse_frames[int(self.animation_index)]
+                self.image = self.frames[int(self.animation_index)]
             else:
                 self.image = pygame.transform.flip(self.frames[int(self.animation_index)], -1, False)
 
@@ -242,10 +305,17 @@ class EnemyCloseType:
         self.player_rect.x += self.v / self.fps
 
     def check_intersection(self, player_pose_x, player_pose_y):
-        self.image = pygame.Surface((50, 50), pygame.SRCALPHA)
-        pygame.draw.circle(self.image, (255, 0, 0, 128), (25, 25), 25)
-        self.rect = self.image.get_rect(center=(self.player_rect.x, self.player_rect.y))
-        self.transparent_circle_rect = self.image.get_rect(center=(self.player_rect.x, self.player_rect.y))
+        # self.image = pygame.Surface((50, 50))
+        # pygame.draw.circle(self.image, (255, 0, 0, 128), (25, 25), 25)
+        # self.rect = self.image.get_rect(center=(self.player_rect.x, self.player_rect.y))
+        # self.transparent_circle_rect = self.image.get_rect(center=(self.player_rect.x, self.player_rect.y))
+        # self.image = pygame.Surface((2 * radius, 2 * radius), pygame.SRCALPHA)
+        # pygame.draw.circle(self.image, (255, 255, 255), (radius, radius), radius)
+        # self.rect = self.image.get_rect(center=(x, y))
+        # self.mask = pygame.mask.from_surface(self.image)
+        # if pygame.sprite.collide_mask(self.rect, mask):
+        #     return True
+        # else:
         return False
 
     def strive_to_player(self, player_pose_x, player_pose_y):
@@ -259,7 +329,11 @@ class EnemyCloseType:
                 self.move_back()
             elif self.player_rect.y + 10 > player_pose_y:
                 self.move_right()
+        else:
+            self.attack()
 
+    def attack(self):
+        self.idle()
 
 
 

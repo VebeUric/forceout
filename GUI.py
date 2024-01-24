@@ -35,6 +35,22 @@ class Animation:
                 # Сохраняем фрагмент в отдельном файле
                 tile.save(os.path.join(output_folder, f"frame_{row}_{col}.png"))
 
+    def load_alpha_image(self, name):
+        fullname = os.path.join('data', name)
+        # если файл не существует, то выходим
+        if not os.path.isfile(fullname):
+            sys.exit()
+        image = pygame.image.load(fullname)
+        image = image.convert()
+        rect = image.get_rect()
+        image.set_colorkey((255, 255, 255))
+        alpha_channel = pygame.Surface(rect.size, pygame.SRCALPHA)
+        alpha_channel.fill((0, 0, 0, 0))
+        alpha_channel.blit(image, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        image_with_transparent_background = pygame.Surface(rect.size, pygame.SRCALPHA)
+        image_with_transparent_background.blit(alpha_channel, (0, 0))
+        return image
+
 
     def load_image(self, name, colorkey=None):
         fullname = os.path.join('data', name)
@@ -98,14 +114,31 @@ class Surrounded:
     def __init__(self, anim, screen):
         self.anim = anim
         self.screen = screen
-        self.v = 5
-        self.i = 0
-        self.image = pygame.transform.scale(self.anim.load_image('Surrounded/surbub.png'), (1280 * 2, 720 * 2))
+        self.v = 15
+        self.x = 0
+        self.y = 0
+        zoom_kof = 4
+        self.image = pygame.transform.scale(self.anim.load_image('Surrounded/surbub.png'), (1280 * zoom_kof, 720 * zoom_kof))
 
-    def move_surrounded(self):
-        self.i -= self.v
-        self.rect = self.image.get_rect(topleft=(self.i, self.i))
+
+    def draw(self):
+        self.rect = self.image.get_rect(topleft=(self.x, self.y))
         self.screen.blit(self.image, self.rect)
+    def move_down(self):
+        self.y -= self.v
+
+    def move_up(self):
+        self.y += self.v
+
+    def move_left(self):
+        self.x += self.v
+
+    def move_right(self):
+        self.x -= self.v
+
+    def set_spawn(self):
+        pass
+
 
 
 
