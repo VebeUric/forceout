@@ -35,18 +35,17 @@ while running:
             is_pause = False
 
     if not is_pause:
-        game_controller.inactivate_pause()
+        game_controller.activate_pause()
         screen.fill((0, 0, 0))
         game_controller.update(event, keys)
         if game_controller.do_exit:
             running = False
     else:
-        game_controller.activate_pause()
+        game_controller.inactivate_pause()
 
     pygame.display.flip()
     clock.tick(10)
 pygame.quit()
-
 
 
 

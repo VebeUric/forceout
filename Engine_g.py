@@ -49,6 +49,10 @@ class Player(pygame.sprite.Sprite):
         self.y_pose = y_pose
         self.fps = fps
         self.v = 620
+        self.m_l_d = True
+        self.m_b_d = True
+        self.m_r_d = True
+        self.m_s_d = True
         self.move_again = None
         self.frames = None
         self.scroll_box = pygame.Rect(83, 65, 500, 500)
@@ -177,33 +181,43 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = y_pose
 
     def move_right(self):
-        walk = player_animation['walk']
-        player_sprite_sheet = anim.load_image(walk[0])
-        self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
-        self.rect.y -= self.v / self.fps
+        if self.m_r_d:
+            walk = player_animation['walk']
+            player_sprite_sheet = anim.load_image(walk[0])
+            self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
+            self.rect.y -= self.v / self.fps
+        self.m_r_d = True
+
 
 
 
     def move_back(self):
-        walk = player_animation['walk']
-        player_sprite_sheet = anim.load_image(walk[0])
-        self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
-        self.rect.y += self.v / self.fps
+        if self.m_b_d:
+            walk = player_animation['walk']
+            player_sprite_sheet = anim.load_image(walk[0])
+            self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
+            self.rect.y += self.v / self.fps
+        self.m_b_d = True
+
 
 
     def move_left(self):
-        self.move_again = True
-        walk = player_animation['walk']
-        player_sprite_sheet = anim.load_image(walk[0])
-        self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
-        self.rect.x -= self.v / self.fps
+        if self.m_l_d:
+            self.move_again = True
+            walk = player_animation['walk']
+            player_sprite_sheet = anim.load_image(walk[0])
+            self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
+            self.rect.x -= self.v / self.fps
+        self.m_l_d = True
 
     def move_stright(self):
-        self.move_again = None
-        walk = player_animation['walk']
-        player_sprite_sheet = anim.load_image(walk[0])
-        self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
-        self.rect.x += self.v / self.fps
+        if self.m_s_d:
+            self.move_again = None
+            walk = player_animation['walk']
+            player_sprite_sheet = anim.load_image(walk[0])
+            self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
+            self.rect.x += self.v / self.fps
+        self.m_s_d = True
 
 
     def press_shift(self):
@@ -393,10 +407,15 @@ class GameObject(pygame.sprite.Sprite):
         self.have_image = None
         self.screen = screen
         self.sur = sur
-        self.RED = (0, 0, 0, 0)
+        self.RED = (0, 0, 0)
+        self.is_colide = None
         if image:
            self.rect = anim.load_image(image).get_rect()
+           self.curcle = pygame.sprite.Sprite()
+           self.rect.width = width
+           self.rect.height = hieght
            self.image = anim.load_alpha_image(image)
+           self.image = self.image = pygame.transform.scale(self.image, (self.rect.width * 1.2, self.rect.height * 1.2))
            self.have_image = True
         else:
             self.image = pygame.Surface((width, hieght), pygame.SRCALPHA)
@@ -405,30 +424,72 @@ class GameObject(pygame.sprite.Sprite):
         self.rect.y = y
         self.rect.width = width
         self.hieght = hieght
+        self.circle = Circle_spr(self, x, y)
+
 
     def update(self):
-        pass
+        self.circle.update()
+        if self.sur.current_scroll == 'up':
+              self.rect.y = self.rect.y - 15
+              self.sur.current_scroll = None
+        elif self.sur.current_scroll == 'down':
+            self.rect.y = self.rect.y + 15
+            self.sur.current_scroll = None
+
+        if self.sur.current_scroll == 'left':
+            self.rect.x = self.rect.x - 15
+            self.sur.current_scroll = None
+        elif self.sur.current_scroll == 'right':
+            self.rect.x = self.rect.x + 15
+            self.sur.current_scroll = None
+
+
+
 
     def check_colision(self, player):
         if pygame.sprite.collide_rect(player, self):
+            self.is_colide = True
             if self.rect.y <= player.rect.y:
-                player.move_right()
+                player.m_r_d = False
+                # player.rect.y += 5
             elif self.rect.y <= player.rect.y:
-                player.move_rback()
-
+                player.m_b_d = False
+                # player.rect.y -= 5
             if self.rect.x <= player.rect.x:
-                player.move_stright()
-            elif self.rect.x <= player.rect.x:
-                player.move_left()
+                player.m_l_d = False
+                # player.rect.x += 5
+            elif self.rect.x >= player.rect.x:
+                player.m_s_d = False
+                # player.rect.x -= 5
+        else:
+            self.is_colide = False
+
 
 
 
     def draw(self):
+
+
+        self.circle.draw()
         if not self.have_image:
             pygame.draw.rect(self.image, self.RED, (self.rect.x, self.rect.y, self.rect.width, self.rect.height))
         self.screen.blit(self.image, (self.rect.x, self.rect.y))
 
 
+class Circle_spr(pygame.sprite.Sprite):
+    def __init__(self, obj, x, y):
+        self.radius = 250
+        self.color = (0, 0, 0)
+        self.x = x
+        self.y = y
+        self.obj = obj
+        self.image_c = pygame.Surface((2 * self.radius, 2 * self.radius), pygame.SRCALPHA)
+        pygame.draw.circle(self.image_c, (0, 0, 0), (self.radius, self.radius), self.radius)
+        self.rect = self.image_c.get_rect()
 
+    def draw(self):
+        pygame.draw.circle(self.image_c, (0, 0, 0), (self.x, self.y), self.radius)
 
+    def update(self):
+        self.rect.center = self.obj.rect.center
 

@@ -111,20 +111,23 @@ class Animation:
 
 
 class Surrounded:
-    def __init__(self, anim, screen, surr_path):
+    def __init__(self, anim, screen, surr_path, zoom_kof=4, is_scrol=True):
         self.anim = anim
         self.screen = screen
         self.v = 15
         self.x = 0
+        self.is_scroll = is_scrol
         self.y = 0
-        zoom_kof = 4
+        self.current_scroll = None
         self.image = pygame.transform.scale(self.anim.load_image(surr_path), (1280 * zoom_kof, 720 * zoom_kof))
 
 
     def draw(self):
+        print(self.x, self.y, 111111111111111)
         self.rect = self.image.get_rect(topleft=(self.x, self.y))
         self.screen.blit(self.image, self.rect)
     def move_down(self):
+        self.current_scroll = 'up'
         self.y -= self.v
 
     # def set_spawn_point(self, x, y):
@@ -132,13 +135,19 @@ class Surrounded:
     #     self.y += y
 
     def move_up(self):
-        self.y += self.v
+        if self. is_scroll:
+            self.current_scroll = 'down'
+            self.y += self.v
 
     def move_left(self):
-        self.x += self.v
+        if self.is_scroll:
+            self.current_scroll = 'right'
+            self.x += self.v
 
     def move_right(self):
-        self.x -= self.v
+        if self.is_scroll:
+            self.current_scroll = 'left'
+            self.x -= self.v
 
     def set_spawn(self):
         pass
