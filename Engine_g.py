@@ -1,4 +1,4 @@
-from game_state_manager import Settings
+
 import pygame
 import sys
 import os
@@ -106,7 +106,28 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (int(self.image.get_width() * zoom_level), int(self.image.get_height() * zoom_level)))
         screen.blit(self.image, self.rect.topleft)
 
-    def update(self, screen):
+    def update(self, screen, keys):
+        if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
+            self.is_pressed_shift = True
+        else:
+            self.is_pressed_shift = False
+
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            self.move_left()
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            self.move_stright()
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
+            self.move_right()
+        elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
+            self.move_back()
+        if not (keys[pygame.K_s] or keys[pygame.K_w] or keys[pygame.K_d] or keys[pygame.K_a]):
+            self.idle()
+
+        if self.is_pressed_shift:
+            self.speed_up()
+        else:
+            self.speed_down()
+
 
         self.radius = 5
         self.image = pygame.Surface((2 * self.radius, 2 * self.radius), pygame.SRCALPHA)
@@ -366,6 +387,46 @@ class EnemyFurtherType:
 
 
 
+class GameObject(pygame.sprite.Sprite):
+    def __init__(self, x, y, width, hieght, screen, sur, image=None):
+        super().__init__()
+        self.have_image = None
+        self.screen = screen
+        self.sur = sur
+        self.RED = (0, 0, 0, 0)
+        if image:
+           self.rect = anim.load_image(image).get_rect()
+           self.image = anim.load_alpha_image(image)
+           self.have_image = True
+        else:
+            self.image = pygame.Surface((width, hieght), pygame.SRCALPHA)
+            self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.rect.width = width
+        self.hieght = hieght
+
+    def update(self):
+        pass
+
+    def check_colision(self, player):
+        if pygame.sprite.collide_rect(player, self):
+            if self.rect.y <= player.rect.y:
+                player.move_right()
+            elif self.rect.y <= player.rect.y:
+                player.move_rback()
+
+            if self.rect.x <= player.rect.x:
+                player.move_stright()
+            elif self.rect.x <= player.rect.x:
+                player.move_left()
+
+
+
+    def draw(self):
+        if not self.have_image:
+            pygame.draw.rect(self.image, self.RED, (self.rect.x, self.rect.y, self.rect.width, self.rect.height))
+        self.screen.blit(self.image, (self.rect.x, self.rect.y))
 
 
 

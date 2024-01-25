@@ -1,48 +1,43 @@
-from manager_Tools import Button
-from GUI import Animation
-import pygame
-
-
+from GUI import Surrounded, Animation
+from Engine_g import Player, GameObject
 
 anim = Animation()
-class StartWindow:
-    def __init__(self, screen):
-        self.frames = []
-        self.screen = screen
-        self.current_frame = 0
-        self.play_button = Button('Играть', self.go_to_hub(), 'data/buttons/not_pressed.png', 'buttons/pressed.png')
-        self.play_button.replace((200, 200))
-        self.play_button.resize((200, 200))
-        self.exit_button = Button('Выход', self.exit(), 'data/buttons/not_pressed.png', 'data/buttons/pressed.png')
-        self.learning_button = Button('Обучение', self.start_learning(), 'data/buttons/not_pressed.png', 'data/buttons/pressed.png')
-        self.rect = anim.load_image('start_background/1.png').get_rect()
-        for i in range(1, 251):
-            self.frames.append(anim.load_image(f'start_background/{i}.png'))
 
-    def update(self, event):
-        self.current_frame += 1
-        zoom_kof= 1
-        if self.current_frame >= len(self.frames):
-            self.current_frame = 0
-        self.image = self.frames[self.current_frame]
-        self.play_button.update(event)
-        self.image = pygame.transform.scale(self.image, (1280 * zoom_kof, 720 * zoom_kof))
+class Hub:
+    def __init__(self, screen, game_controller):
+        self.screen = screen
+        self.game_controller = game_controller
+        self.anim = Animation()
+        self.player = Player(80, 'data/Sprites/main_character_sprite/hesh', 'Sprites/main_character_sprite/Fire_player_sprite.png', 'Sprites/main_character_sprite/hesh/frame_0_0.png')
+        self.hub_sur = Surrounded(anim, screen, 'Surrounded/hub.png')
+        # self.wall_one = GameObject(0, 286, 600, 200, self.screen)
+        self.home = GameObject(0, 0, 316, 280, self.screen,self.hub_sur, 'Surrounded/home.png' )
+        # self.player.respawn(3000, 1800)
+        self.player.respawn(100, 100)
+
+
+    def update(self, event, keys):
+        print(self.player.rect.x, self.player.rect.y)
+        # self.wall_one.check_colision(self.player)
+        self.home.check_colision(self.player)
+        if not self.screen.get_rect().contains(self.player.scroll_box):
+            self.player.scroll_screen(self.screen, self.hub_sur)
+        self.player.update(self.screen, keys)
 
 
     def draw(self):
-        self.play_button.render(self.screen)
-        self.screen.blit(self.image, self.rect.topleft)
+        self.hub_sur.draw()
+        self.player.draw(self.screen)
+        # self.wall_one.draw()
+        self.home.draw()
 
-    def go_to_hub(self):
+
+    def chech_shop_orange(self):
         pass
 
-    def exit(self):
+    def blacksmith(self):
         pass
 
-    def start_learning(self):
+    def choice_level(self):
         pass
 
-
-class Hub:
-    def __init__(self):
-        pass

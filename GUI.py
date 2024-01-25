@@ -127,6 +127,10 @@ class Surrounded:
     def move_down(self):
         self.y -= self.v
 
+    # def set_spawn_point(self, x, y):
+    #     self.x -= x
+    #     self.y += y
+
     def move_up(self):
         self.y += self.v
 

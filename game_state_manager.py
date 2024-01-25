@@ -1,5 +1,6 @@
 # from level_logic import Hub, Level
-from Hub import StartWindow
+from Windows import StartWindow
+from Hub import Hub
 
 
 class GameStateManager:
@@ -10,22 +11,28 @@ class GameStateManager:
     'level_1':''
 
         }
+        self.do_exit = False
         self.screen = screen
-        self.start_window = StartWindow(self.screen)
-        # self.hub = Hub()
+        self.start_window = StartWindow(self.screen, self)
+        self.hub = Hub(self.screen, self)
         # self.level = Level_logic()
         self.current_state = 'start_menu'
 
-    def update(self, event):
+    def update(self, event, keys):
         if self.current_state == 'start_menu':
             self.start_window.update(event)
             self.start_window.draw()
         elif self.current_state == 'hub':
-            self.hub.update()
-            self.hub.draw(self.screen)
+            self.hub.update(event, keys)
+            self.hub.draw()
         elif self.current_state == 'level_one':
             self.level.update()
-            self.level.draw(self.screen)
+            self.level.draw()
+        elif self.current_state == 'exit':
+             self.do_exit = True
+
+    def exit(self):
+        return True
 
 
     def add_game_state(self, text, state):
@@ -37,7 +44,11 @@ class GameStateManager:
     def check_current_game_state(self):
         return self.current_state
 
+    def activate_pause(self):
+        pass
 
+    def inactivate_pause(self):
+        pass
 
 class Settings:
     def __init__(self):

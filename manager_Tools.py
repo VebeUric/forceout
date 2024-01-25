@@ -9,6 +9,7 @@ class Button(Sprite):
     def __init__(self, text=None, issue=lambda: None, picture_path=None, alternative_picture_path=None):
         super().__init__()
         self.issue = issue
+        print(issue)
         self.text = text
         self.text_size = 50
         self.is_active = None
@@ -25,7 +26,7 @@ class Button(Sprite):
 
 
     def resize(self, size):
-        self.rect.width, self.height = size
+        self.rect.width, self.rect.height = size
 
     def replace(self, pos):
         self.rect.x, self.rect.y = pos
@@ -65,30 +66,30 @@ class Button(Sprite):
             self.on_click()
 
     def render(self, screen):
-        print('ok')
         self.button_rect = pygame.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
         if self.picture_path:
             if self.alternative_picture_path:
                 if self.is_active:
-                    screen.blit(anim.load_image(self.alternative_picture_path), (self.rect.x, self.rect.y))
+                    if not type(self.alternative_picture_path) is Surface:
+                        self.alternative_picture_path = anim.load_image(self.alternative_picture_path)
+                    self.alternative_picture_path = pygame.transform.scale(self.alternative_picture_path, (self.rect.width, self.rect.height))
+                    screen.blit(self.alternative_picture_path, (self.rect.x, self.rect.y))
                 else:
+                    self.picture_path = pygame.transform.scale(self.picture_path, (self.rect.width, self.rect.height))
                     screen.blit(self.picture_path, (self.rect.x, self.rect.y))
             else:
+                self.picture_path = pygame.transform.scale(self.picture_path, (self.rect.width, self.rect.height))
                 screen.blit(self.picture_path, (self.rect.x, self.rect.y))
         else:
             if self.is_active:
                 color = (200, 100, 100)
             else:
                 color = (100, 200, 100)
-            pygame.draw.rect(screen, color, (self.rect.width, self.rect.height), self.rect.size)
-        self.show_text()
-
-    def show_text(self):
-        if self.text:
-            font = pygame.font.Font(None, self.text_size)                                        # Сделать обособленную фуекцию чтобы можно было скрывать текст
-            text_surface = font.render(self.text, True, self.color)
-            text_rect = text_surface.get_rect(center=self.rect.center)
-            self.image.blit(text_surface, text_rect.center)
+            pygame.draw.rect(screen, color, (self.rect.width, self.rect.height // 2), self.rect.size // 2)
+        font = pygame.font.Font(None, self.text_size)                                        # Сделать обособленную фуекцию чтобы можно было скрывать текст
+        text_surface = font.render(self.text, True, (0, 0, 0))
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        screen.blit(text_surface, text_rect.center)
 
 
 
