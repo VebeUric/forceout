@@ -111,14 +111,14 @@ class Animation:
 
 
 class Surrounded:
-    def __init__(self, anim, screen):
+    def __init__(self, anim, screen, surr_path):
         self.anim = anim
         self.screen = screen
         self.v = 15
         self.x = 0
         self.y = 0
         zoom_kof = 4
-        self.image = pygame.transform.scale(self.anim.load_image('Surrounded/surbub.png'), (1280 * zoom_kof, 720 * zoom_kof))
+        self.image = pygame.transform.scale(self.anim.load_image(surr_path), (1280 * zoom_kof, 720 * zoom_kof))
 
 
     def draw(self):

@@ -2,7 +2,9 @@ import pygame
 from pygame.sprite import Sprite
 from pygame import Surface
 from pygame import Rect
+from GUI import Animation
 
+anim = Animation()
 class Button(Sprite):
     def __init__(self, text=None, issue=lambda: None, picture_path=None, alternative_picture_path=None):
         super().__init__()
@@ -10,7 +12,7 @@ class Button(Sprite):
         self.text = text
         self.text_size = 50
         self.is_active = None
-        self.color = BLACK
+        self.color = (0, 0, 0)
         self.picture_path = picture_path
         self.alternative_picture_path = alternative_picture_path
         self.rect = Rect(0, 0, 100, 100)
@@ -63,15 +65,16 @@ class Button(Sprite):
             self.on_click()
 
     def render(self, screen):
+        print('ok')
         self.button_rect = pygame.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
         if self.picture_path:
             if self.alternative_picture_path:
                 if self.is_active:
-                    screen.blit(self.alternative_picture_path)
+                    screen.blit(anim.load_image(self.alternative_picture_path), (self.rect.x, self.rect.y))
                 else:
-                    screen.blit(self.picture_path)
+                    screen.blit(self.picture_path, (self.rect.x, self.rect.y))
             else:
-                screen.blit(self.picture_path)
+                screen.blit(self.picture_path, (self.rect.x, self.rect.y))
         else:
             if self.is_active:
                 color = (200, 100, 100)
@@ -84,8 +87,8 @@ class Button(Sprite):
         if self.text:
             font = pygame.font.Font(None, self.text_size)                                        # Сделать обособленную фуекцию чтобы можно было скрывать текст
             text_surface = font.render(self.text, True, self.color)
-            text_rect = text_surface.get_rect(center=self.buttob_rect.center)
-            self.image.blit(text_rect, text_rect)
+            text_rect = text_surface.get_rect(center=self.rect.center)
+            self.image.blit(text_surface, text_rect.center)
 
 
 

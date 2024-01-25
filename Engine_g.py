@@ -2,6 +2,7 @@ from game_state_manager import Settings
 import pygame
 import sys
 import os
+import math
 from GUI import Animation
 from random import randint
 
@@ -56,7 +57,11 @@ class Player(pygame.sprite.Sprite):
         self.animation_speed = 10  # Скорость смены кадров
         self.animation_index = 0
         self.controller_hp()
-        self.player_rect = anim.load_image('Sprites/main_character_sprite/hesh/frame_0_0.png').get_rect()
+        self.rect = anim.load_image('Sprites/main_character_sprite/hesh/frame_0_0.png').get_rect()
+
+
+
+        # self.rect = anim.load_image('Sprites/main_character_sprite/hesh/frame_0_0.png').get_rect()
         self.respawn(100, 100)
         if not (os.path.exists(character_folder_path) and os.path.isdir(character_folder_path)):
             anim.split_image('data/Sprites/main_character_sprite/Fire_player_sprite.png', character_folder_path, 25, 1)
@@ -99,20 +104,24 @@ class Player(pygame.sprite.Sprite):
         zoom_level = 2
         screen.blit(self.health_rect, self.healt_image.topleft)
         self.image = pygame.transform.scale(self.image, (int(self.image.get_width() * zoom_level), int(self.image.get_height() * zoom_level)))
-        screen.blit(self.image, self.player_rect.topleft)
+        screen.blit(self.image, self.rect.topleft)
 
     def update(self, screen):
-        self.scroll_box.center = self.player_rect.center
+
+        self.radius = 5
+        self.image = pygame.Surface((2 * self.radius, 2 * self.radius), pygame.SRCALPHA)
+        pygame.draw.circle(self.image, (255, 255, 255), (self.radius, self.radius), self.radius)
+
+        self.scroll_box.center = self.rect.center
         if self.frames:
             self.animation_index += 1
             if self.animation_index >= len(self.frames):
                 self.animation_index = 0
             if not self.move_again:
                 self.image = self.frames[int(self.animation_index)]
-                self.mask = pygame.mask.from_surface(self.image)
             else:
                 self.image = pygame.transform.flip(self.frames[int(self.animation_index)], -1, False)
-                self.mask = pygame.mask.from_surface(self.image)
+
 
 
 
@@ -120,16 +129,16 @@ class Player(pygame.sprite.Sprite):
         if self.scroll_box.left < screen.get_rect().left:
             sur.move_left()
             print('move_left')
-            self.player_rect.x += self.v / self.fps
+            self.rect.x += self.v / self.fps
         elif self.scroll_box.right > screen.get_rect().right:
             sur.move_right()
-            self.player_rect.x -= self.v / self.fps
+            self.rect.x -= self.v / self.fps
         if self.scroll_box.top < screen.get_rect().top:
             sur.move_up()
-            self.player_rect.y += self.v / self.fps
+            self.rect.y += self.v / self.fps
         elif self.scroll_box.bottom > screen.get_rect().bottom:
             sur.move_down()
-            self.player_rect.y -= self.v / self.fps
+            self.rect.y -= self.v / self.fps
 
     def clear_frames(self):
         self.move_again = None
@@ -143,14 +152,14 @@ class Player(pygame.sprite.Sprite):
             return False
 
     def respawn(self, x_pose, y_pose):
-        self.player_rect.x = x_pose
-        self.player_rect.y = y_pose
+        self.rect.x = x_pose
+        self.rect.y = y_pose
 
     def move_right(self):
         walk = player_animation['walk']
         player_sprite_sheet = anim.load_image(walk[0])
         self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
-        self.player_rect.y -= self.v / self.fps
+        self.rect.y -= self.v / self.fps
 
 
 
@@ -158,7 +167,7 @@ class Player(pygame.sprite.Sprite):
         walk = player_animation['walk']
         player_sprite_sheet = anim.load_image(walk[0])
         self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
-        self.player_rect.y += self.v / self.fps
+        self.rect.y += self.v / self.fps
 
 
     def move_left(self):
@@ -166,14 +175,14 @@ class Player(pygame.sprite.Sprite):
         walk = player_animation['walk']
         player_sprite_sheet = anim.load_image(walk[0])
         self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
-        self.player_rect.x -= self.v / self.fps
+        self.rect.x -= self.v / self.fps
 
     def move_stright(self):
         self.move_again = None
         walk = player_animation['walk']
         player_sprite_sheet = anim.load_image(walk[0])
         self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
-        self.player_rect.x += self.v / self.fps
+        self.rect.x += self.v / self.fps
 
 
     def press_shift(self):
@@ -203,31 +212,25 @@ class EnemyCloseType:
         self.fps = fps
         self.move_again = None
         self.v = 90
-
-
-        self.radius = 20
-        self.image = pygame.Surface((2 * self.radius, 2 * self.radius), pygame.SRCALPHA)
-        pygame.draw.circle(self.image,(255, 255, 255), (self.radius, self.radius), self.radius)
-        self.rect = self.image.get_rect()
-
+        self.nonattack = None
+        self.time_after_attack = 60
+        self.rect = anim.load_image('Sprites/CloseTypeEnemy/hesh/frame_0_0.png').get_rect()
         self.frames = None
         self.sprite_width = 27 # Ширина каждого кадра
         self.sprite_height = 70 # Высота каждого кадра
         self.animation_speed = 10  # Скорость смены кадров
         self.animation_index = 0
-        self.player_rect = anim.load_image('Sprites/CloseTypeEnemy/NightBorne.png').get_rect()
-        self.respawn(400, 400)
         if not (os.path.exists(character_folder_path) and os.path.isdir(character_folder_path)):
             anim.split_image('data/Sprites/CloseTypeEnemy/NightBorne.png', character_folder_path, 5, 1)
         self.idle()
 
 
     def respawn(self, x_pose, y_pose):
-        self.player_rect.x = x_pose
-        self.player_rect.y = y_pose
+        self.rect.x = x_pose
+        self.rect.y = y_pose
 
     def draw(self, screen):
-        screen.blit(self.image, self.player_rect.topleft)
+        screen.blit(self.image, self.rect.topleft)
 
 
     def attack(self):
@@ -243,13 +246,13 @@ class EnemyCloseType:
 
     def draw(self, screen):
         zoom_level = 3.5
+
         self.image = pygame.transform.scale(self.image, (
         int(self.image.get_width() * zoom_level), int(self.image.get_height() * zoom_level)))
-        screen.blit(self.image, self.player_rect.topleft)
+        screen.blit(self.image, self.rect.topleft)
 
     def update(self, screen, player_rect_x, player_rect_y):
-        self.rect.center = self.player_rect.center
-        self.strive_to_player(player_rect_x, player_rect_y)
+        self.time_after_attack += 1
         if self.frames:
             self.animation_index += 1
             if self.animation_index >= len(self.frames):
@@ -271,14 +274,14 @@ class EnemyCloseType:
             return False
 
     def respawn(self, x_pose, y_pose):
-        self.player_rect.x = x_pose
-        self.player_rect.y = y_pose
+        self.rect.x = x_pose
+        self.rect.y = y_pose
 
     def move_right(self):
         walk = close_type_animation['walk']
         player_sprite_sheet = anim.load_image(walk[0])
         self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
-        self.player_rect.y -= self.v / self.fps
+        self.rect.y -= self.v / self.fps
 
 
 
@@ -286,7 +289,7 @@ class EnemyCloseType:
         walk = close_type_animation['walk']
         player_sprite_sheet = anim.load_image(walk[0])
         self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
-        self.player_rect.y += self.v / self.fps
+        self.rect.y += self.v / self.fps
 
 
 
@@ -295,14 +298,14 @@ class EnemyCloseType:
         walk = close_type_animation['walk']
         player_sprite_sheet = anim.load_image(walk[0])
         self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
-        self.player_rect.x -= self.v / self.fps
+        self.rect.x -= self.v / self.fps
 
     def move_stright(self):
         self.move_again = None
         walk = close_type_animation['walk']
         player_sprite_sheet = anim.load_image(walk[0])
         self.frames = anim.prepear_frames(walk[1], walk[3], player_sprite_sheet, walk[2], walk[4])
-        self.player_rect.x += self.v / self.fps
+        self.rect.x += self.v / self.fps
 
     def check_intersection(self, player_pose_x, player_pose_y):
         # self.image = pygame.Surface((50, 50))
@@ -318,22 +321,37 @@ class EnemyCloseType:
         # else:
         return False
 
-    def strive_to_player(self, player_pose_x, player_pose_y):
-        if not self.check_intersection(player_pose_x, player_pose_y):
-            if self.player_rect.x + 10 > player_pose_x:
-                self.move_left()
-            elif self.player_rect.x + 10 < player_pose_x:
-                self.move_stright()
+    def strive_to_player(self, player_pose_x, player_pose_y, all_enemies):
+        self.avoid_enemies(all_enemies)
+        if self.rect.x + 10 > player_pose_x:
+            self.move_left()
+        elif self.rect.x + 10 < player_pose_x:
+            self.move_stright()
 
-            if self.player_rect.y + 10 < player_pose_y:
-                self.move_back()
-            elif self.player_rect.y + 10 > player_pose_y:
-                self.move_right()
-        else:
-            self.attack()
+        if self.rect.y + 10 < player_pose_y:
+            self.move_back()
+        elif self.rect.y + 10 > player_pose_y:
+            self.move_right()
 
-    def attack(self):
+
+    def avoid_enemies(self, all_enemies):
+        for enemy in all_enemies:
+            if enemy != self:
+                dx = enemy.rect.x - self.rect.x
+                dy = enemy.rect.y - self.rect.y
+                distance = math.sqrt(dx**2 + dy**2)
+                if distance < 50:  # Устанавливайте расстояние, при котором враги начинают избегать друг друга
+                    angle = math.atan2(dy, dx)
+                    self.rect.x -= math.cos(angle) * 2
+                    self.rect.y -= math.sin(angle) * 2
+
+
+    def attack(self, player):
+        if self.time_after_attack == 60:
+           player.get_damage(10)
+           self.time_after_attack = 0
         self.idle()
+
 
 
 
