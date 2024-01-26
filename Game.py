@@ -2,7 +2,6 @@ import time
 from game_state_manager import GameStateManager
 from Engine_g import Player, EnemyCloseType
 import pygame
-from random import randint
 from GUI import Animation, Surrounded
 
 
@@ -44,8 +43,5 @@ while running:
         game_controller.inactivate_pause()
 
     pygame.display.flip()
-    clock.tick(10)
+    clock.tick(15)
 pygame.quit()
-
-
-
